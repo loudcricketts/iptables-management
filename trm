@@ -1,0 +1,36 @@
+#!/bin/sh
+
+RED="\e[31m"
+YEL="\e[33m"
+BLU="\e[94m"
+ENDCOLOR="\e[0m"
+INTF="enp1s0"
+
+if [ "$#" -ne 2 ]; then
+    echo "Illegal number of parameters"
+    exit
+fi
+
+LINE1="sudo iptables -D DOCKER-USER -i ${INTF} -s $1 -p tcp -m conntrack --ctorigdstport $2 --ctdir ORIGINAL -j ACCEPT"
+LINE2="sudo iptables -D DOCKER-USER -i ${INTF} -p tcp -m conntrack --ctorigdstport $2 --ctdir ORIGINAL -j DROP"
+
+COLOR1="sudo iptables -D DOCKER-USER -i ${INTF} -s ${BLU}$1${ENDCOLOR} -p tcp -m conntrack --ctorigdstport ${BLU}$2${ENDCOLOR} --ctdir ORIGINAL -j ACCEPT"
+COLOR2="sudo iptables -D DOCKER-USER -i ${INTF} -p tcp -m conntrack --ctorigdstport ${BLU}$2${ENDCOLOR} --ctdir ORIGINAL -j DROP"
+
+
+echo -e "${YEL}Rules to remove:${ENDCOLOR}"
+echo -e "⚠️ $COLOR1"
+echo -e "⚠️ $COLOR2"
+read -p "Do you want to proceed? (yes/no) " yn
+
+case $yn in
+	yes | y) echo ok, we will proceed;
+		break;;
+	no | n) echo exiting...;
+		exit;;
+	* ) echo invalid response;
+        exit;;
+esac
+
+$LINE2
+$LINE1
